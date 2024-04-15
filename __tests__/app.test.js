@@ -78,7 +78,7 @@ describe("/api/articles/:article_id", () => {
         expect(message).toBe("Not found")
       })
     })
-    test("GET 404: Should return a 400 'Invalid request' error if the article ID is of the incorrect type", () => {
+    test("GET 400: Should return a 400 'Invalid request' error if the article ID is of the incorrect type", () => {
       return request(app)
       .get("/api/articles/headlines")
       .expect(400)
