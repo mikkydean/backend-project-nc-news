@@ -8,3 +8,15 @@ exports.selectArticleById = (article_id) => {
         return rows[0]
     })
 }
+
+exports.selectArticleIdByCount = () => {
+    return db.query(`SELECT article_id, COUNT(*) FROM comments GROUP By article_id;`).then(({ rows }) => {
+        return rows
+    })
+}
+
+exports.selectArticles = () => {
+    return db.query(`SELECT * FROM articles ORDER BY created_at DESC`).then(({ rows }) => {
+       return rows
+    })
+}

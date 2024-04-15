@@ -3,7 +3,7 @@ const app = require("../app");
 const db = require("../db/connection");
 const seed = require("../db/seeds/seed");
 const data = require("../db/data/test-data/index");
-const endpoints = require("../endpoints.json")
+const endpoints = require("../endpoints.json");
 
 afterAll(() => {
   return db.end();
@@ -42,49 +42,119 @@ describe("/api/topics", () => {
 });
 
 describe("/api", () => {
-    test("GET 200: Should return the updated endpoints.json file with information about avialable endpoints", () => {
-        return request(app)
-        .get("/api")
-        .expect(200)
-        .then((response) => {
-            expect(JSON.parse(response.text)).toEqual({ endpoints} )
-        })
-    })
-})
+  test("GET 200: Should return the updated endpoints.json file with information about avialable endpoints", () => {
+    return request(app)
+      .get("/api")
+      .expect(200)
+      .then((response) => {
+        expect(JSON.parse(response.text)).toEqual({ endpoints });
+      });
+  });
+});
 
 describe("/api/articles/:article_id", () => {
-    test("GET 200: Should return an article object with the required properties", () => {
-        return request(app)
-        .get("/api/articles/3")
-        .expect(200)
-        .then(({ body }) => {
-            const { article } = body;
-            expect(typeof article.author).toBe("string")
-            expect(typeof article.title).toBe("string")
-            expect(typeof article.article_id).toBe("number")
-            expect(typeof article.body).toBe("string")
-            expect(typeof article.topic).toBe("string")
-            expect(typeof article.created_at).toBe("string")
-            expect(typeof article.votes).toBe("number")
-            expect(typeof article.article_img_url).toBe("string")
-        })
-    })
-    test("GET 404: Should return a 404 'Not found' error if the article ID is not in the database", () => {
-      return request(app)
+  test("GET 200: Should return an article object with the required properties", () => {
+    return request(app)
+      .get("/api/articles/3")
+      .expect(200)
+      .then(({ body }) => {
+        const { article } = body;
+        expect(article.author).toBe("icellusedkars");
+        expect(article.title).toBe("Eight pug gifs that remind me of mitch");
+        expect(article.article_id).toBe(3);
+        expect(article.body).toBe("some gifs");
+        expect(article.topic).toBe("mitch");
+        expect(article.created_at).toBe("2020-11-03T09:12:00.000Z");
+        expect(article.votes).toBe(0);
+        expect(article.article_img_url).toBe(
+          "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+        );
+      });
+  });
+  test("GET 404: Should return a 404 'Not found' error if the article ID is not in the database", () => {
+    return request(app)
       .get("/api/articles/9999")
       .expect(404)
       .then(({ body }) => {
         const { message } = body;
-        expect(message).toBe("Not found")
-      })
-    })
-    test("GET 400: Should return a 400 'Invalid request' error if the article ID is of the incorrect type", () => {
-      return request(app)
+        expect(message).toBe("Not found");
+      });
+  });
+  test("GET 400: Should return a 400 'Invalid request' error if the article ID is of the incorrect type", () => {
+    return request(app)
       .get("/api/articles/headlines")
       .expect(400)
       .then(({ body }) => {
         const { message } = body;
-        expect(message).toBe("Invalid request")
-      })
-    })
-})
+        expect(message).toBe("Invalid request");
+      });
+  });
+});
+
+describe("/api/articles", () => {
+  test("GET 200: Should respond with an array of article objects of the correct length with the specified properties", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles.length).toBe(13);
+        articles.forEach((article) => {
+          expect(typeof article.author).toBe("string");
+          expect(typeof article.title).toBe("string");
+          expect(typeof article.article_id).toBe("number");
+          expect(typeof article.topic).toBe("string");
+          expect(typeof article.created_at).toBe("string");
+          expect(typeof article.votes).toBe("number");
+          expect(typeof article.article_img_url).toBe("string");
+          expect(typeof article.comment_count).toBe("number");
+        });
+      });
+  });
+  test("GET 200: Should respond with the correct comment count total for the articles in the array", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        if (articles.article_id === 1) {
+          expect(articles.comment_count).toBe(11);
+        }
+        if (articles.article_id === 9) {
+          expect(articles.comment_count).toBe(2);
+        }
+        if (articles.article_id === 4) {
+          expect(articles.comment_count).toBe(0);
+        }
+      });
+  });
+  test("GET 200: There should not be a body property present on any of the article objects", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        articles.forEach((article) => {
+          expect(typeof article.body).toBe("undefined");
+        });
+      });
+  });
+  test("GET 200: The articles should be sorted by date in descending order", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toBeSorted({ key: "created_at", descending: true });
+      });
+  });
+  test("GET 404: Responds with an error if the endpoint is not found", () => {
+    return request(app)
+      .get("/api/article_endpoint")
+      .expect(404)
+      .then(({ body }) => {
+        const { message } = body;
+        expect(message).toBe("Endpoint not found");
+      });
+  })
+});
