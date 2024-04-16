@@ -67,5 +67,21 @@
         }
       ]
     }
+  },
+  "POST /api/articles/:article_id/comments": {
+    "description": "posts a comment to an article and returns the posted comment",
+    "queries": ["article_id", "username", "body"],
+    "exampleResponse": {
+      "articles": [
+        {
+          "comment_id": 19,
+          "votes": 0,
+          "created_at": "2020-06-20 08:24:00",
+          "author": "butter_bridge",
+          "body": "Test comment",
+          "article_id": 2
+        }
+      ]
+    }
   }
 }

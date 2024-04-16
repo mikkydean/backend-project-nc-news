@@ -86,7 +86,7 @@ describe("/api/articles/:article_id", () => {
       .expect(400)
       .then(({ body }) => {
         const { message } = body;
-        expect(message).toBe("Invalid request");
+        expect(message).toBe("Invalid request: ID has incorrect format");
       });
   });
 });
@@ -201,16 +201,54 @@ describe("/api/articles/:article_id/comments", () => {
       .expect(400)
       .then(({ body }) => {
         const { message } = body;
-        expect(message).toBe("Invalid request");
+        expect(message).toBe("Invalid request: ID has incorrect format");
       });
   });
   test("GET 404: Should return a 404 'Article ID not found' error if the article_id is valid but non-existent", () => {
     return request(app)
-    .get("/api/articles/99/comments")
-    .expect(404)
-    .then(({ body }) => {
-      const { message } = body;
-      expect(message).toBe("Article ID not found")
-    })
-  })
+      .get("/api/articles/99/comments")
+      .expect(404)
+      .then(({ body }) => {
+        const { message } = body;
+        expect(message).toBe("Article ID not found");
+      });
+  });
+  test("POST 201: Inserts a new comment for the specified article ID and returns a comment object for the posted comment", () => {
+    const commentToAdd = { username: "butter_bridge", body: "Test comment" };
+    return request(app)
+      .post("/api/articles/2/comments")
+      .send(commentToAdd)
+      .expect(201)
+      .then(({ body }) => {
+        const { comment } = body;
+        expect(comment.comment_id).toBe(19);
+        expect(comment.body).toBe("Test comment");
+        expect(comment.article_id).toBe(2);
+        expect(comment.author).toBe("butter_bridge");
+        expect(comment.votes).toBe(0);
+        expect(typeof comment.created_at).toBe("string");
+      });
+  });
+  test("POST 404: Should return a 404 error if the comment object provided has incorrect properties", () => {
+    const commentToAdd = { user: "butter_bridge", text: "Test comment" };
+    return request(app)
+      .post("/api/articles/3/comments")
+      .send(commentToAdd)
+      .expect(400)
+      .then(({ body }) => {
+        const { message } = body;
+        expect(message).toBe(
+          "Invalid request: Object has incorrect properties"
+        );
+      });
+  });
+  test("POST 400: Should return a 400 'Invalid request' error if the article ID is of the incorrect type", () => {
+    return request(app)
+      .post("/api/articles/five/comments")
+      .expect(400)
+      .then(({ body }) => {
+        const { message } = body;
+        expect(message).toBe("Invalid request: ID has incorrect format");
+      });
+  });
 });

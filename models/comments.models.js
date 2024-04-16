@@ -5,3 +5,11 @@ exports.selectCommentsForArticle = (article_id) => {
         return rows
     })
 }
+
+exports.insertCommentForArticleId = (article_id, comment) => {
+    const { username, body } = comment
+    const inputArray = [article_id, body, username]
+    return db.query(`INSERT INTO comments (article_id, body, author) VALUES ($1,$2,$3) RETURNING *;`, inputArray).then(({ rows }) => {
+        return rows[0]
+    })
+}
