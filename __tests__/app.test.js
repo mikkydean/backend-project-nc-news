@@ -160,95 +160,99 @@ describe("/api/articles", () => {
 });
 
 describe("/api/articles/:article_id/comments", () => {
-  test("GET 200: Should return an array of comments for the given article ID with the required properties", () => {
-    return request(app)
-      .get("/api/articles/5/comments")
-      .expect(200)
-      .then(({ body }) => {
-        const { comments } = body;
-        comments.forEach((comment) => {
-          expect(comment.article_id).toBe(5);
-          expect(typeof comment.comment_id).toBe("number");
-          expect(typeof comment.votes).toBe("number");
-          expect(typeof comment.created_at).toBe("string");
-          expect(typeof comment.author).toBe("string");
-          expect(typeof comment.body).toBe("string");
-          expect(typeof comment.article_id).toBe("number");
+  describe("GET", () => {
+    test("GET 200: Should return an array of comments for the given article ID with the required properties", () => {
+      return request(app)
+        .get("/api/articles/5/comments")
+        .expect(200)
+        .then(({ body }) => {
+          const { comments } = body;
+          comments.forEach((comment) => {
+            expect(comment.article_id).toBe(5);
+            expect(typeof comment.comment_id).toBe("number");
+            expect(typeof comment.votes).toBe("number");
+            expect(typeof comment.created_at).toBe("string");
+            expect(typeof comment.author).toBe("string");
+            expect(typeof comment.body).toBe("string");
+            expect(typeof comment.article_id).toBe("number");
+          });
         });
-      });
+    });
+    test("GET 200: Should return an array sorted by most recent comment first", () => {
+      return request(app)
+        .get("/api/articles/1/comments")
+        .expect(200)
+        .then(({ body }) => {
+          const { comments } = body;
+          expect(comments).toBeSorted({ key: "created_at", descending: true });
+        });
+    });
+    test("GET 200: Should return an empty array if the article has no comments", () => {
+      return request(app)
+        .get("/api/articles/2/comments")
+        .expect(200)
+        .then(({ body }) => {
+          const { comments } = body;
+          expect(comments.length).toBe(0);
+        });
+    });
+    test("GET 400: Should return a 400 'Invalid request' error if the article ID is of the incorrect type", () => {
+      return request(app)
+        .get("/api/articles/five/comments")
+        .expect(400)
+        .then(({ body }) => {
+          const { message } = body;
+          expect(message).toBe("Invalid request: ID has incorrect format");
+        });
+    });
+    test("GET 404: Should return a 404 'Article ID not found' error if the article_id is valid but non-existent", () => {
+      return request(app)
+        .get("/api/articles/99/comments")
+        .expect(404)
+        .then(({ body }) => {
+          const { message } = body;
+          expect(message).toBe("Article ID not found");
+        });
+    });
   });
-  test("GET 200: Should return an array sorted by most recent comment first", () => {
-    return request(app)
-      .get("/api/articles/1/comments")
-      .expect(200)
-      .then(({ body }) => {
-        const { comments } = body;
-        expect(comments).toBeSorted({ key: "created_at", descending: true });
-      });
-  });
-  test("GET 200: Should return an empty array if the article has no comments", () => {
-    return request(app)
-      .get("/api/articles/2/comments")
-      .expect(200)
-      .then(({ body }) => {
-        const { comments } = body;
-        expect(comments.length).toBe(0);
-      });
-  });
-  test("GET 400: Should return a 400 'Invalid request' error if the article ID is of the incorrect type", () => {
-    return request(app)
-      .get("/api/articles/five/comments")
-      .expect(400)
-      .then(({ body }) => {
-        const { message } = body;
-        expect(message).toBe("Invalid request: ID has incorrect format");
-      });
-  });
-  test("GET 404: Should return a 404 'Article ID not found' error if the article_id is valid but non-existent", () => {
-    return request(app)
-      .get("/api/articles/99/comments")
-      .expect(404)
-      .then(({ body }) => {
-        const { message } = body;
-        expect(message).toBe("Article ID not found");
-      });
-  });
-  test("POST 201: Inserts a new comment for the specified article ID and returns a comment object for the posted comment", () => {
-    const commentToAdd = { username: "butter_bridge", body: "Test comment" };
-    return request(app)
-      .post("/api/articles/2/comments")
-      .send(commentToAdd)
-      .expect(201)
-      .then(({ body }) => {
-        const { comment } = body;
-        expect(comment.comment_id).toBe(19);
-        expect(comment.body).toBe("Test comment");
-        expect(comment.article_id).toBe(2);
-        expect(comment.author).toBe("butter_bridge");
-        expect(comment.votes).toBe(0);
-        expect(typeof comment.created_at).toBe("string");
-      });
-  });
-  test("POST 404: Should return a 404 error if the comment object provided has incorrect properties", () => {
-    const commentToAdd = { user: "butter_bridge", text: "Test comment" };
-    return request(app)
-      .post("/api/articles/3/comments")
-      .send(commentToAdd)
-      .expect(400)
-      .then(({ body }) => {
-        const { message } = body;
-        expect(message).toBe(
-          "Invalid request: Object has incorrect properties"
-        );
-      });
-  });
-  test("POST 400: Should return a 400 'Invalid request' error if the article ID is of the incorrect type", () => {
-    return request(app)
-      .post("/api/articles/five/comments")
-      .expect(400)
-      .then(({ body }) => {
-        const { message } = body;
-        expect(message).toBe("Invalid request: ID has incorrect format");
-      });
+  describe("POST", () => {
+    test("POST 201: Inserts a new comment for the specified article ID and returns a comment object for the posted comment", () => {
+      const commentToAdd = { username: "butter_bridge", body: "Test comment" };
+      return request(app)
+        .post("/api/articles/2/comments")
+        .send(commentToAdd)
+        .expect(201)
+        .then(({ body }) => {
+          const { comment } = body;
+          expect(comment.comment_id).toBe(19);
+          expect(comment.body).toBe("Test comment");
+          expect(comment.article_id).toBe(2);
+          expect(comment.author).toBe("butter_bridge");
+          expect(comment.votes).toBe(0);
+          expect(typeof comment.created_at).toBe("string");
+        });
+    });
+    test("POST 404: Should return a 404 error if the comment object provided has incorrect properties", () => {
+      const commentToAdd = { user: "butter_bridge", text: "Test comment" };
+      return request(app)
+        .post("/api/articles/3/comments")
+        .send(commentToAdd)
+        .expect(400)
+        .then(({ body }) => {
+          const { message } = body;
+          expect(message).toBe(
+            "Invalid request: Object has incorrect properties"
+          );
+        });
+    });
+    test("POST 400: Should return a 400 'Invalid request' error if the article ID is of the incorrect type", () => {
+      return request(app)
+        .post("/api/articles/five/comments")
+        .expect(400)
+        .then(({ body }) => {
+          const { message } = body;
+          expect(message).toBe("Invalid request: ID has incorrect format");
+        });
+    });
   });
 });

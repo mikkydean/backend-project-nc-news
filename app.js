@@ -9,6 +9,11 @@ const {
   getCommentsForArticle,
   postCommentForArticleId,
 } = require("./controllers/comments.controllers");
+const {
+  handleCustomErrors,
+  handlePsqlErrors,
+  handleServerErrors,
+} = require('./errors/index.js')
 
 const app = express();
 
@@ -30,24 +35,8 @@ app.all("*", (req, res, next) => {
   res.status(404).send({ message: "Endpoint not found" });
 });
 
-app.use((err, req, res, next) => {
-  if (err.status && err.message) {
-    res.status(err.status).send({ message: err.message });
-  }
-  next(err);
-});
-
-app.use((err, req, res, next) => {
-  if (err.code === "22P02") {
-    res.status(400).send({ message: "Invalid request: ID has incorrect format" });
-  } else if (err.code === "23502") {
-    res.status(400).send({ message: "Invalid request: Object has incorrect properties" });
-  }
-  next(err);
-});
-
-app.use((err, req, res, next) => {
-  res.status(500).send({ message: "Internal server error" });
-});
+app.use(handleCustomErrors);
+app.use(handlePsqlErrors);
+app.use(handleServerErrors);
 
 module.exports = app;
