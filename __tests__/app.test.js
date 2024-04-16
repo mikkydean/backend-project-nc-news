@@ -156,5 +156,61 @@ describe("/api/articles", () => {
         const { message } = body;
         expect(message).toBe("Endpoint not found");
       });
+  });
+});
+
+describe("/api/articles/:article_id/comments", () => {
+  test("GET 200: Should return an array of comments for the given article ID with the required properties", () => {
+    return request(app)
+      .get("/api/articles/5/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const { comments } = body;
+        comments.forEach((comment) => {
+          expect(comment.article_id).toBe(5);
+          expect(typeof comment.comment_id).toBe("number");
+          expect(typeof comment.votes).toBe("number");
+          expect(typeof comment.created_at).toBe("string");
+          expect(typeof comment.author).toBe("string");
+          expect(typeof comment.body).toBe("string");
+          expect(typeof comment.article_id).toBe("number");
+        });
+      });
+  });
+  test("GET 200: Should return an array sorted by most recent comment first", () => {
+    return request(app)
+      .get("/api/articles/1/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const { comments } = body;
+        expect(comments).toBeSorted({ key: "created_at", descending: true });
+      });
+  });
+  test("GET 200: Should return an empty array if the article has no comments", () => {
+    return request(app)
+      .get("/api/articles/2/comments")
+      .expect(200)
+      .then(({ body }) => {
+        const { comments } = body;
+        expect(comments.length).toBe(0);
+      });
+  });
+  test("GET 400: Should return a 400 'Invalid request' error if the article ID is of the incorrect type", () => {
+    return request(app)
+      .get("/api/articles/five/comments")
+      .expect(400)
+      .then(({ body }) => {
+        const { message } = body;
+        expect(message).toBe("Invalid request");
+      });
+  });
+  test("GET 404: Should return a 404 'Article ID not found' error if the article_id is valid but non-existent", () => {
+    return request(app)
+    .get("/api/articles/99/comments")
+    .expect(404)
+    .then(({ body }) => {
+      const { message } = body;
+      expect(message).toBe("Article ID not found")
+    })
   })
 });
