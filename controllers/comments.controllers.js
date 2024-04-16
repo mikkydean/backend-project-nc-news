@@ -1,6 +1,7 @@
 const {
   selectCommentsForArticle,
   insertCommentForArticleId,
+  deleteCommentById
 } = require("../models/comments.models");
 const { checkArticleExists } = require("../models/articles.models");
 
@@ -29,3 +30,13 @@ exports.postCommentForArticleId = (req, res, next) => {
       next(err);
     });
 };
+
+exports.removeCommentById = (req, res, next) => {
+  const { comment_id } = req.params;
+  deleteCommentById(comment_id).then(() => {
+    res.status(204).send()
+  })
+  .catch((err) => {
+    next(err);
+  });
+}
