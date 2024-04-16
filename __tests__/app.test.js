@@ -53,41 +53,100 @@ describe("/api", () => {
 });
 
 describe("/api/articles/:article_id", () => {
-  test("GET 200: Should return an article object with the required properties", () => {
-    return request(app)
-      .get("/api/articles/3")
-      .expect(200)
-      .then(({ body }) => {
-        const { article } = body;
-        expect(article.author).toBe("icellusedkars");
-        expect(article.title).toBe("Eight pug gifs that remind me of mitch");
-        expect(article.article_id).toBe(3);
-        expect(article.body).toBe("some gifs");
-        expect(article.topic).toBe("mitch");
-        expect(article.created_at).toBe("2020-11-03T09:12:00.000Z");
-        expect(article.votes).toBe(0);
-        expect(article.article_img_url).toBe(
-          "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
-        );
-      });
+  describe("GET", () => {
+    test("GET 200: Should return an article object with the required properties", () => {
+      return request(app)
+        .get("/api/articles/3")
+        .expect(200)
+        .then(({ body }) => {
+          const { article } = body;
+          expect(article.author).toBe("icellusedkars");
+          expect(article.title).toBe("Eight pug gifs that remind me of mitch");
+          expect(article.article_id).toBe(3);
+          expect(article.body).toBe("some gifs");
+          expect(article.topic).toBe("mitch");
+          expect(article.created_at).toBe("2020-11-03T09:12:00.000Z");
+          expect(article.votes).toBe(0);
+          expect(article.article_img_url).toBe(
+            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+          );
+        });
+    });
+    test("GET 404: Should return a 404 'Not found' error if the article ID is not in the database", () => {
+      return request(app)
+        .get("/api/articles/9999")
+        .expect(404)
+        .then(({ body }) => {
+          const { message } = body;
+          expect(message).toBe("Not found");
+        });
+    });
+    test("GET 400: Should return a 400 'Invalid request' error if the article ID is of the incorrect type", () => {
+      return request(app)
+        .get("/api/articles/headlines")
+        .expect(400)
+        .then(({ body }) => {
+          const { message } = body;
+          expect(message).toBe("Invalid request: Value has incorrect format");
+        });
+    });
   });
-  test("GET 404: Should return a 404 'Not found' error if the article ID is not in the database", () => {
-    return request(app)
-      .get("/api/articles/9999")
-      .expect(404)
-      .then(({ body }) => {
-        const { message } = body;
-        expect(message).toBe("Not found");
-      });
-  });
-  test("GET 400: Should return a 400 'Invalid request' error if the article ID is of the incorrect type", () => {
-    return request(app)
-      .get("/api/articles/headlines")
-      .expect(400)
-      .then(({ body }) => {
-        const { message } = body;
-        expect(message).toBe("Invalid request: ID has incorrect format");
-      });
+  describe("PATCH", () => {
+    test("PATCH 200: Should update the votes for an article by the specified amount and return the updated article", () => {
+      const voteCount = { inc_votes: 10 };
+      return request(app)
+        .patch("/api/articles/3")
+        .send(voteCount)
+        .expect(200)
+        .then(({ body }) => {
+          const { article } = body;
+          expect(article.author).toBe("icellusedkars");
+          expect(article.title).toBe("Eight pug gifs that remind me of mitch");
+          expect(article.article_id).toBe(3);
+          expect(article.body).toBe("some gifs");
+          expect(article.topic).toBe("mitch");
+          expect(article.created_at).toBe("2020-11-03T09:12:00.000Z");
+          expect(article.votes).toBe(10);
+          expect(article.article_img_url).toBe(
+            "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+          );
+        });
+    });
+    test("PATCH 404: Should return a 404 'Article ID not found' error if the article ID is not in the database", () => {
+      return request(app)
+        .patch("/api/articles/9999")
+        .expect(404)
+        .then(({ body }) => {
+          const { message } = body;
+          expect(message).toBe("Article ID not found");
+        });
+    });
+    test("PATCH 400: Should return a 400 error if the vote object provided has an incorrect key", () => {
+      const voteCount = { increment_votes: 10 };
+      return request(app)
+        .patch("/api/articles/3")
+        .send(voteCount)
+        .expect(400)
+        .then(({ body }) => {
+          const { message } = body;
+          expect(message).toBe(
+            "Invalid request: Object has incorrect properties"
+          );
+        });
+    });
+    test("PATCH 400: Should return a 400 error if the vote object provided has an incorrect value", () => {
+      const voteCount = { inc_votes: "ten" };
+      return request(app)
+        .patch("/api/articles/3")
+        .send(voteCount)
+        .expect(400)
+        .then(({ body }) => {
+          const { message } = body;
+          expect(message).toBe(
+            "Invalid request: Value has incorrect format"
+          );
+        });
+    });
   });
 });
 
@@ -202,7 +261,7 @@ describe("/api/articles/:article_id/comments", () => {
         .expect(400)
         .then(({ body }) => {
           const { message } = body;
-          expect(message).toBe("Invalid request: ID has incorrect format");
+          expect(message).toBe("Invalid request: Value has incorrect format");
         });
     });
     test("GET 404: Should return a 404 'Article ID not found' error if the article_id is valid but non-existent", () => {
@@ -251,7 +310,7 @@ describe("/api/articles/:article_id/comments", () => {
         .expect(400)
         .then(({ body }) => {
           const { message } = body;
-          expect(message).toBe("Invalid request: ID has incorrect format");
+          expect(message).toBe("Invalid request: Value has incorrect format");
         });
     });
     test("POST 400: Should return a 400 error if the username does not exist in the database", () => {
@@ -262,7 +321,9 @@ describe("/api/articles/:article_id/comments", () => {
         .expect(400)
         .then(({ body }) => {
           const { message } = body;
-          expect(message).toBe("Invalid request: Specified value does not exist")
+          expect(message).toBe(
+            "Invalid request: Specified value does not exist"
+          );
         });
     });
   });

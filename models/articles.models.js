@@ -20,17 +20,18 @@ exports.selectArticleIdByCount = () => {
 };
 
 exports.selectArticles = () => {
-    return db
-      .query(
-        `SELECT articles.article_id, title, topic, articles.author, articles.created_at::timestamp, articles.votes, article_img_url, CAST(COUNT(comment_id) AS INT) AS comment_count
+  return db
+    .query(
+      `SELECT articles.article_id, title, topic, articles.author, articles.created_at::timestamp, articles.votes, article_img_url, CAST(COUNT(comment_id) AS INT) AS comment_count
       FROM articles
       LEFT OUTER JOIN comments ON articles.article_id=comments.article_id
       GROUP BY articles.article_id ORDER BY articles.created_at DESC
-  ;`)
-      .then(({ rows }) => {
-        return rows;
-      });
-  };
+  ;`
+    )
+    .then(({ rows }) => {
+      return rows;
+    });
+};
 
 exports.checkArticleExists = (article_id) => {
   return db
@@ -42,4 +43,17 @@ exports.checkArticleExists = (article_id) => {
     });
 };
 
-
+exports.updateArticleVotes = (article_id, inc_votes) => {
+  const updateArray = [article_id, inc_votes];
+  return db
+    .query(
+      `UPDATE articles SET votes = votes + $2 WHERE article_id = $1 RETURNING *;`,
+      updateArray
+    )
+    .then(({ rows }) => {
+      if (rows.length === 0) {
+        return Promise.reject({ status: 404, message: "Article ID not found" });
+      }
+      return rows[0];
+    });
+};
