@@ -254,5 +254,16 @@ describe("/api/articles/:article_id/comments", () => {
           expect(message).toBe("Invalid request: ID has incorrect format");
         });
     });
+    test("POST 400: Should return a 400 error if the username does not exist in the database", () => {
+      const commentToAdd = { username: "fred", body: "Test comment" };
+      return request(app)
+        .post("/api/articles/2/comments")
+        .send(commentToAdd)
+        .expect(400)
+        .then(({ body }) => {
+          const { message } = body;
+          expect(message).toBe("Invalid request: Specified value does not exist")
+        });
+    });
   });
 });
