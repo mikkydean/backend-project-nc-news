@@ -142,9 +142,7 @@ describe("/api/articles/:article_id", () => {
         .expect(400)
         .then(({ body }) => {
           const { message } = body;
-          expect(message).toBe(
-            "Invalid request: Value has incorrect format"
-          );
+          expect(message).toBe("Invalid request: Value has incorrect format");
         });
     });
   });
@@ -324,6 +322,37 @@ describe("/api/articles/:article_id/comments", () => {
           expect(message).toBe(
             "Invalid request: Specified value does not exist"
           );
+        });
+    });
+  });
+});
+
+describe("/api/comments/:comment_id", () => {
+  describe("DELETE", () => {
+    test("DELETE 204: Deletes the specified comment by comment_id and returns status 204 with no content", () => {
+      return request(app)
+      .delete("/api/comments/5")
+      .expect(204)
+      .then(({ body }) => {
+        expect(body).toEqual({})
+      })
+    });
+    test("DELETE 404: Should return a 404 error if the comment_id does not exist", () => {
+      return request(app)
+        .delete("/api/comments/9999")
+        .expect(404)
+        .then(({ body }) => {
+          const { message } = body;
+          expect(message).toBe("Comment ID not found");
+        });
+    });
+    test("DELETE 400: Should return a 400 error if the comment_id is of the incorrect type", () => {
+      return request(app)
+        .delete("/api/comments/five")
+        .expect(400)
+        .then(({ body }) => {
+          const { message } = body;
+          expect(message).toBe("Invalid request: Value has incorrect format");
         });
     });
   });
