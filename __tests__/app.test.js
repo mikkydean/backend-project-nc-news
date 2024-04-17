@@ -72,6 +72,15 @@ describe("/api/articles/:article_id", () => {
           );
         });
     });
+    test("GET 200: Should also return a comment count for the specified article_id", () => {
+      return request(app)
+      .get("/api/articles/1")
+      .expect(200)
+      .then(({ body }) => {
+        const { article } = body;
+        expect(article.comment_count).toBe(11)
+      })
+    })
     test("GET 404: Should return a 404 'Not found' error if the article ID is not in the database", () => {
       return request(app)
         .get("/api/articles/9999")
