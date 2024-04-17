@@ -168,23 +168,6 @@ describe("/api/articles", () => {
           });
         });
     });
-    test("GET 200: Should respond with the correct comment count total for the articles in the array", () => {
-      return request(app)
-        .get("/api/articles")
-        .expect(200)
-        .then(({ body }) => {
-          const { articles } = body;
-          if (articles.article_id === 1) {
-            expect(articles.comment_count).toBe(11);
-          }
-          if (articles.article_id === 9) {
-            expect(articles.comment_count).toBe(2);
-          }
-          if (articles.article_id === 4) {
-            expect(articles.comment_count).toBe(0);
-          }
-        });
-    });
     test("GET 200: There should not be a body property present on any of the article objects", () => {
       return request(app)
         .get("/api/articles")
