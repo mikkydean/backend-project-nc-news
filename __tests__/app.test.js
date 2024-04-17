@@ -357,3 +357,31 @@ describe("/api/comments/:comment_id", () => {
     });
   });
 });
+
+describe("/api/users", () => {
+  describe("GET", () => {
+    test("GET 200: Should respond with an array of users with their username, name and avatar_url", () => {
+      return request(app)
+      .get("/api/users")
+      .expect(200)
+      .then(({ body }) => {
+        const { users } = body
+        expect(users.length).toBe(4)
+        users.forEach((user) => {
+          expect(typeof user.username).toBe("string")
+          expect(typeof user.name).toBe("string")
+          expect(typeof user.avatar_url).toBe("string")
+        })
+      })
+    })
+    test("GET 404: Responds with an error if the endpoint is not found", () => {
+      return request(app)
+        .get("/api/users_endpoint")
+        .expect(404)
+        .then(({ body }) => {
+          const { message } = body;
+          expect(message).toBe("Endpoint not found");
+        });
+    });
+  })
+})

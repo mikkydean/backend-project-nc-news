@@ -18,6 +18,7 @@ const {
   handlePsqlErrors,
   handleServerErrors,
 } = require('./errors/index.js')
+const { getUsers } = require("./controllers/users.controllers.js")
 
 const app = express();
 
@@ -32,6 +33,8 @@ app.get("/api/articles/:article_id", getArticleById);
 app.get("/api/articles", getArticles);
 
 app.get("/api/articles/:article_id/comments", getCommentsForArticle);
+
+app.get("/api/users", getUsers)
 
 app.post("/api/articles/:article_id/comments", postCommentForArticleId);
 
