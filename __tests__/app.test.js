@@ -150,75 +150,93 @@ describe("/api/articles/:article_id", () => {
 
 describe("/api/articles", () => {
   describe("GET", () => {
-    test("GET 200: Should respond with an array of article objects of the correct length with the specified properties", () => {
-      return request(app)
-        .get("/api/articles")
-        .expect(200)
-        .then(({ body }) => {
-          const { articles } = body;
-          expect(articles.length).toBe(13);
-          articles.forEach((article) => {
-            expect(typeof article.author).toBe("string");
-            expect(typeof article.title).toBe("string");
-            expect(typeof article.article_id).toBe("number");
-            expect(typeof article.topic).toBe("string");
-            expect(typeof article.created_at).toBe("string");
-            expect(typeof article.votes).toBe("number");
-            expect(typeof article.article_img_url).toBe("string");
-          });
+  test("GET 200: Should respond with an array of article objects of the correct length with the specified properties", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles.length).toBe(13);
+        articles.forEach((article) => {
+          expect(typeof article.author).toBe("string");
+          expect(typeof article.title).toBe("string");
+          expect(typeof article.article_id).toBe("number");
+          expect(typeof article.topic).toBe("string");
+          expect(typeof article.created_at).toBe("string");
+          expect(typeof article.votes).toBe("number");
+          expect(typeof article.article_img_url).toBe("string");
+          expect(typeof article.comment_count).toBe("number");
         });
-    });
-    test("GET 200: There should not be a body property present on any of the article objects", () => {
-      return request(app)
-        .get("/api/articles")
-        .expect(200)
-        .then(({ body }) => {
-          const { articles } = body;
-          articles.forEach((article) => {
-            expect(typeof article.body).toBe("undefined");
-          });
-        });
-    });
-    test("GET 200: The articles should be sorted by date in descending order", () => {
-      return request(app)
-        .get("/api/articles")
-        .expect(200)
-        .then(({ body }) => {
-          const { articles } = body;
-          expect(articles).toBeSorted({ key: "created_at", descending: true });
-        });
-    });
-    test("GET 200: Should accept a topic query and filter articles by the specified topic value", () => {
-      return request(app)
-        .get("/api/articles?topic=mitch")
-        .expect(200)
-        .then(({ body }) => {
-          const { articles } = body;
-          expect(articles.length).toBe(12);
-          articles.forEach((article) => {
-            expect(article.topic).toBe("mitch");
-          });
-        });
-    });
-    test("GET 404: Responds with an error if the endpoint is not found", () => {
-      return request(app)
-        .get("/api/article_endpoint")
-        .expect(404)
-        .then(({ body }) => {
-          const { message } = body;
-          expect(message).toBe("Endpoint not found");
-        });
-    });
-    test("GET 404: Should return a 404 error if a topic does not exist in the database", () => {
-      return request(app)
-        .get("/api/articles?topic=dogs")
-        .expect(404)
-        .then(({ body }) => {
-          const { message } = body;
-          expect(message).toBe("Topic not found");
-        });
-    });
+      });
   });
+  test("GET 200: Should respond with the correct comment count total for the articles in the array", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        if (articles.article_id === 1) {
+          expect(articles.comment_count).toBe(11);
+        }
+        if (articles.article_id === 9) {
+          expect(articles.comment_count).toBe(2);
+        }
+        if (articles.article_id === 4) {
+          expect(articles.comment_count).toBe(0);
+        }
+      });
+  });
+  test("GET 200: There should not be a body property present on any of the article objects", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        articles.forEach((article) => {
+          expect(typeof article.body).toBe("undefined");
+        });
+      });
+  });
+  test("GET 200: The articles should be sorted by date in descending order", () => {
+    return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles).toBeSorted({ key: "created_at", descending: true });
+      });
+  });
+  test("GET 200: Should accept a topic query and filter articles by the specified topic value", () => {
+    return request(app)
+    .get("/api/articles?topic=mitch")
+    .expect(200)
+    .then(({ body }) => {
+      const { articles } = body
+      expect(articles.length).toBe(12)
+      articles.forEach((article) => {
+        expect(article.topic).toBe("mitch")
+      })
+    })
+  })
+  test("GET 404: Responds with an error if the endpoint is not found", () => {
+    return request(app)
+      .get("/api/article_endpoint")
+      .expect(404)
+      .then(({ body }) => {
+        const { message } = body;
+        expect(message).toBe("Endpoint not found");
+      });
+  });
+  test("GET 404: Should return a 404 error if a topic does not exist in the database", () => {
+    return request(app)
+    .get("/api/articles?topic=dogs")
+    .expect(404)
+    .then(({ body }) => {
+      const { message } = body;
+      expect(message).toBe("Topic not found")
+    })
+  })
+})
 });
 
 describe("/api/articles/:article_id/comments", () => {
@@ -336,11 +354,11 @@ describe("/api/comments/:comment_id", () => {
   describe("DELETE", () => {
     test("DELETE 204: Deletes the specified comment by comment_id and returns status 204 with no content", () => {
       return request(app)
-        .delete("/api/comments/5")
-        .expect(204)
-        .then(({ body }) => {
-          expect(body).toEqual({});
-        });
+      .delete("/api/comments/5")
+      .expect(204)
+      .then(({ body }) => {
+        expect(body).toEqual({})
+      })
     });
     test("DELETE 404: Should return a 404 error if the comment_id does not exist", () => {
       return request(app)
@@ -367,18 +385,18 @@ describe("/api/users", () => {
   describe("GET", () => {
     test("GET 200: Should respond with an array of users with their username, name and avatar_url", () => {
       return request(app)
-        .get("/api/users")
-        .expect(200)
-        .then(({ body }) => {
-          const { users } = body;
-          expect(users.length).toBe(4);
-          users.forEach((user) => {
-            expect(typeof user.username).toBe("string");
-            expect(typeof user.name).toBe("string");
-            expect(typeof user.avatar_url).toBe("string");
-          });
-        });
-    });
+      .get("/api/users")
+      .expect(200)
+      .then(({ body }) => {
+        const { users } = body
+        expect(users.length).toBe(4)
+        users.forEach((user) => {
+          expect(typeof user.username).toBe("string")
+          expect(typeof user.name).toBe("string")
+          expect(typeof user.avatar_url).toBe("string")
+        })
+      })
+    })
     test("GET 404: Responds with an error if the endpoint is not found", () => {
       return request(app)
         .get("/api/users_endpoint")
@@ -388,5 +406,5 @@ describe("/api/users", () => {
           expect(message).toBe("Endpoint not found");
         });
     });
-  });
-});
+  })
+})

@@ -21,8 +21,10 @@ exports.selectArticleIdByCount = () => {
 
 exports.selectArticles = (topic) => {
   const queryValue = [];
-  let sqlQueryString = `SELECT article_id, title, topic, author, created_at, votes, article_img_url
-      FROM articles `;
+  let sqlQueryString = `SELECT articles.article_id, title, topic, articles.author, articles.created_at::timestamp, articles.votes, article_img_url,
+      CAST(COUNT(comment_id) AS INT) AS comment_count
+      FROM articles 
+      LEFT OUTER JOIN comments ON articles.article_id=comments.article_id `;
   if (topic) {
     queryValue.push(topic);
     sqlQueryString += `WHERE topic=$1 `;
