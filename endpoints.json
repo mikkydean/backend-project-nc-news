@@ -84,6 +84,10 @@
   "POST /api/articles/:article_id/comments": {
     "description": "posts a comment to an article and returns the posted comment",
     "queries": ["article_id", "username", "body"],
+    "exampleRequestBody": {
+      "username": "butter_bridge",
+      "body": "Test comment"
+    },
     "exampleResponse": {
       "articles": [
         {
@@ -100,6 +104,7 @@
   "PATCH /api/articles/:article_id": {
     "description": "updates the number of votes for an article and returns the updated article",
     "queries": ["article_id"],
+    "exampleRequestBody": { "inc_votes": 10 },
     "exampleResponse": {
       "article": [
         {
