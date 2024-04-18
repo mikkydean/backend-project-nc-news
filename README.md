@@ -1,10 +1,10 @@
 # Northcoders News API
 
-This project was completed as part of the Northcoders Software Development Bootcamp in April 2024. It involved building an API for accessing application data programmatically. It is designed to mimic the building of a real world back-end service (such as Reddit) that provides information to a front-end architecture.
+This project was completed as part of the Northcoders Software Development Bootcamp in April 2024. It involved building an API for accessing application data programmatically. It is designed to mimic the building of a real world back-end service (such as Reddit) that provides information to a front-end application.
 
 The hosted application is available at the following link: https://nc-news-7ch2.onrender.com/api
 
-Please note: This hosted version spins down with inactivty. It may require a short while to spin up again.
+Please note: This hosted version spins down with inactivity. It may require a short while to spin up again.
 
 ## Local setup
 
@@ -22,9 +22,9 @@ To work with this project locally,  proceed as follows:
 4. Open in your code editor (e.g. Visual Studio Code)
 5. Run `npm install` to install dependencies
 
-### Enviroment setup
+### Environment setup
 
-To succesfully connect to the databases locally, create the following .env files:
+To successfully connect to the databases locally, create the following .env files:
 
 * `.env.test` with the entry `PGDATABASE=nc_news_test`
 * `.env.development` with the entry `PGDATABASE=nc_news`
