@@ -282,6 +282,38 @@ describe("/api/articles", () => {
         });
     });
   });
+  describe("POST", () => {
+    test("POST 201: Should add a new article based on a request body and return the article with the specified properties", () => {
+      const articleBody = { author: "icellusedkars", title: "My test article", body: "This a test article.", topic: "cats"};
+      return request(app)
+      .post("/api/articles")
+      .send(articleBody)
+      .expect(201)
+      .then(({ body }) => {
+        const { article } = body;
+        expect(article.author).toBe("icellusedkars")
+        expect(article.title).toBe("My test article")
+        expect(article.body).toBe("This a test article.")
+        expect(article.topic).toBe("cats")
+        expect(article.article_img_url).toBe("https://images.pexels.com/photos/97050/pexels-photo-97050.jpeg?w=700&h=700")
+        expect(article.article_id).toBe(14)
+        expect(article.votes).toBe(0)
+        expect(typeof article.created_at).toBe("string")
+        expect(article.comment_count).toBe(0)
+      })
+    })
+    test("POST 400: Should respond with a 400 error if the body provided does not contain the required content", () => {
+      const articleBody = { author: "icellusedkars", body: "This a test article.", topic: "cats"};
+      return request(app)
+      .post("/api/articles")
+      .send(articleBody)
+      .expect(400)
+      .then(({ body }) => {
+        const { message } = body;
+        expect(message).toBe("Invalid request: Object has incorrect properties")
+      })
+    })
+  })
 });
 
 describe("/api/articles/:article_id/comments", () => {
