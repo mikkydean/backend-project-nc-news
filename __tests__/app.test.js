@@ -424,6 +424,42 @@ describe("/api/comments/:comment_id", () => {
         });
     });
   });
+  describe("PATCH", () => {
+    test("PATCH 200: Should update the votes for a comment given the comment_id and respond with the updated comment", () => {
+      const newVote = { inc_votes: 50 };
+      return request(app)
+        .patch("/api/comments/5")
+        .send(newVote)
+        .expect(200)
+        .then(({ body }) => {
+          const { comment } = body;
+          expect(comment.votes).toBe(50);
+        });
+    });
+
+    test("PATCH 404: Should return a 404 'Comment ID not found' error if the comment ID is not in the database", () => {
+      const newVote = { inc_votes: 50 };
+      return request(app)
+        .patch("/api/comments/9999")
+        .send(newVote)
+        .expect(404)
+        .then(({ body }) => {
+          const { message } = body;
+          expect(message).toBe("Comment ID not found");
+        });
+    });
+    test("PATCH 400: Should return a 400 error if the vote object provided has an incorrect value", () => {
+      const newVote = { inc_votes: "ten" };
+      return request(app)
+        .patch("/api/comments/5")
+        .send(newVote)
+        .expect(400)
+        .then(({ body }) => {
+          const { message } = body;
+          expect(message).toBe("Invalid request: Value has incorrect format");
+        });
+    });
+  });
 });
 
 describe("/api/users", () => {
@@ -471,12 +507,12 @@ describe("/api/users/:username", () => {
     });
     test("GET 404: Should respond with a 404 error if the user is not found", () => {
       return request(app)
-      .get("/api/users/fredsmith")
-      .expect(404)
-      .then(({ body }) => {
-        const { message } = body;
-        expect(message).toBe("User not found")
-      })
-    })
+        .get("/api/users/fredsmith")
+        .expect(404)
+        .then(({ body }) => {
+          const { message } = body;
+          expect(message).toBe("User not found");
+        });
+    });
   });
 });
