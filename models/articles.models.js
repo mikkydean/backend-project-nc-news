@@ -25,7 +25,7 @@ exports.selectArticleIdByCount = () => {
     });
 };
 
-exports.selectArticles = (topic) => {
+exports.selectArticles = (topic, sort_by="created_at", order="DESC") => {
   const queryValue = [];
   let sqlQueryString = `SELECT articles.article_id, title, topic, articles.author, articles.created_at::timestamp, articles.votes, article_img_url,
       CAST(COUNT(comment_id) AS INT) AS comment_count
@@ -35,7 +35,7 @@ exports.selectArticles = (topic) => {
     queryValue.push(topic);
     sqlQueryString += `WHERE topic=$1 `;
   }
-  sqlQueryString += `GROUP BY articles.article_id ORDER BY articles.created_at DESC
+  sqlQueryString += `GROUP BY articles.article_id ORDER BY articles.${sort_by} ${order}
 ;`;
   return db.query(sqlQueryString, queryValue).then(({ rows }) => {
     if (rows.length === 0) {

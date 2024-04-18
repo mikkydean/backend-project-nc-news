@@ -227,6 +227,24 @@ describe("/api/articles", () => {
       })
     })
   })
+  test("GET 200: Should accept a sort_by query to sort articles by any valid column (defaulting to the created_at date", () => {
+    return request(app)
+    .get("/api/articles?sort_by=title")
+    .expect(200)
+    .then(({ body }) => {
+      const { articles } = body;
+      expect(articles).toBeSorted({ key: "title", descending: true });
+    })
+  })
+  test("GET 200: Should accept an order query to display articles in ascending or descending order", () => {
+    return request(app)
+    .get("/api/articles?topic=mitch&sort_by=author&order=asc")
+    .expect(200)
+    .then(({ body }) => {
+      const { articles } = body;
+      expect(articles).toBeSorted({ key: "author", descending: false })
+    })
+  })
   test("GET 404: Responds with an error if the endpoint is not found", () => {
     return request(app)
       .get("/api/article_endpoint")
@@ -243,6 +261,24 @@ describe("/api/articles", () => {
     .then(({ body }) => {
       const { message } = body;
       expect(message).toBe("Topic not found")
+    })
+  })
+  test("GET 400: Should return a 400 error if the sort-by value is not valid", () => {
+    return request(app)
+    .get("/api/articles?sort_by=written_by")
+    .expect(400)
+    .then(({ body }) => {
+      const { message } = body;
+      expect(message).toBe("Invalid request: Undefined column")
+    })
+  })
+  test("GET 400: Should return a 400 error if the order value is not valid", () => {
+    return request(app)
+    .get("/api/articles?order=top_to_bottom")
+    .expect(400)
+    .then(({ body }) => {
+      const { message } = body;
+      expect(message).toBe("Invalid request: Syntax error")
     })
   })
 })

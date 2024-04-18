@@ -16,6 +16,12 @@ exports.handlePsqlErrors = (err, req, res, next) => {
   else if (err.code === "23503") {
     res.status(400).send({ message: "Invalid request: Specified value does not exist" });
   }
+  else if (err.code === "42703") {
+    res.status(400).send({ message: "Invalid request: Undefined column" });
+  }
+  else if (err.code === "42601") {
+    res.status(400).send({ message: "Invalid request: Syntax error" });
+  }
   next(err);
 };
 
