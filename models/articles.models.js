@@ -25,24 +25,30 @@ exports.selectArticleIdByCount = () => {
     });
 };
 
-exports.selectArticles = (topic, sort_by="created_at", order="DESC") => {
+exports.selectArticles = (topic, sort_by="created_at", order="DESC", p, length=10) => {
   const queryValue = [];
   const validSortBys = ["author", "title", "article_id", "topic", "created_at", "votes", "article_img_url", "comment_count"]
   const validOrders = ["asc", "desc", "ASC", "DESC"]
+  const offset = ((p-1)*length)+1
 
   if (!validSortBys.includes(sort_by) || !validOrders.includes(order)) {
-    return Promise.reject({ status: 400, message: "Invalid query value"})
+    return Promise.reject({ status: 400, message: "Invalid query value" })
   }
 
   let sqlQueryString = `SELECT articles.article_id, title, topic, articles.author, articles.created_at::timestamp, articles.votes, article_img_url,
-      CAST(COUNT(comment_id) AS INT) AS comment_count
+      CAST(COUNT(comment_id) AS INT) AS comment_count, count(*) OVER() AS total_count
       FROM articles 
       LEFT OUTER JOIN comments ON articles.article_id=comments.article_id `;
   if (topic) {
     queryValue.push(topic);
     sqlQueryString += `WHERE topic=$1 `;
   }
-  sqlQueryString += `GROUP BY articles.article_id ORDER BY articles.${sort_by} ${order}`;
+  sqlQueryString += `GROUP BY articles.article_id ORDER BY articles.${sort_by} ${order}
+                     LIMIT ${length} `;
+
+  if (p) {
+    sqlQueryString += `OFFSET ${offset}`
+  }
 
   return db.query(sqlQueryString, queryValue).then(({ rows }) => {
     return rows;

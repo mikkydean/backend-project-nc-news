@@ -165,7 +165,7 @@ describe("/api/articles", () => {
         .expect(200)
         .then(({ body }) => {
           const { articles } = body;
-          expect(articles.length).toBe(13);
+          expect(articles.length).toBeGreaterThan(0);
           articles.forEach((article) => {
             expect(typeof article.author).toBe("string");
             expect(typeof article.title).toBe("string");
@@ -221,7 +221,7 @@ describe("/api/articles", () => {
         .expect(200)
         .then(({ body }) => {
           const { articles } = body;
-          expect(articles.length).toBe(12);
+          expect(articles.length).toBeGreaterThan(0);
           articles.forEach((article) => {
             expect(article.topic).toBe("mitch");
           });
@@ -252,6 +252,43 @@ describe("/api/articles", () => {
       .then(({ body }) => {
         const { articles } = body;
         expect(articles.length).toBe(0)
+      })
+    })
+    test("GET 200: Should limit the number of responses to 10 by default", () => {
+      return request(app)
+      .get("/api/articles")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body
+        expect(articles.length).toBe(10)
+      })
+    })
+    test("GET 200: Should limit the number of responses to a specified value other than 10", () => {
+      return request(app)
+      .get("/api/articles?length=5")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body
+        expect(articles.length).toBe(5)
+      })
+    })
+    test("GET 200: Should accept a 'p' query  that specifies the page at which to start", () => {
+      return request(app)
+      .get("/api/articles?p=2&length=5")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body
+        expect(articles[0].title).toBe("Living in the shadow of a great man")
+        expect(articles.length).toBe(5)
+      })
+    })
+    test("GET 200: Should respond with a total_count property", () => {
+      return request(app)
+      .get("/api/articles?length=5&topic=mitch")
+      .expect(200)
+      .then(({ body }) => {
+        const { total_count } = body
+        expect(total_count).toBe(12)
       })
     })
     test("GET 404: Responds with an error if the endpoint is not found", () => {
@@ -290,6 +327,15 @@ describe("/api/articles", () => {
           expect(message).toBe("Invalid query value");
         });
     });
+    test("GET 400: Should return a 400 error if a pagination value is not valid", () => {
+      return request(app)
+      .get("/api/articles?p=2&length=five")
+      .expect(400)
+      .then(({ body }) => {
+        const { message } = body
+        expect(message).toBe("Invalid request: Value has incorrect format")
+      })
+    })
   });
   describe("POST", () => {
     test("POST 201: Should add a new article based on a request body and return the article with the specified properties", () => {
