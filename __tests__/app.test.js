@@ -245,6 +245,15 @@ describe("/api/articles", () => {
           expect(articles).toBeSorted({ key: "author", descending: false });
         });
     });
+    test("GET 200: Should return an empty array if a topic exists but there are no associated articles", () => {
+      return request(app)
+      .get("/api/articles?topic=paper")
+      .expect(200)
+      .then(({ body }) => {
+        const { articles } = body;
+        expect(articles.length).toBe(0)
+      })
+    })
     test("GET 404: Responds with an error if the endpoint is not found", () => {
       return request(app)
         .get("/api/article_endpoint")
@@ -269,7 +278,7 @@ describe("/api/articles", () => {
         .expect(400)
         .then(({ body }) => {
           const { message } = body;
-          expect(message).toBe("Invalid request: Undefined column");
+          expect(message).toBe("Invalid query value");
         });
     });
     test("GET 400: Should return a 400 error if the order value is not valid", () => {
@@ -278,7 +287,7 @@ describe("/api/articles", () => {
         .expect(400)
         .then(({ body }) => {
           const { message } = body;
-          expect(message).toBe("Invalid request: Syntax error");
+          expect(message).toBe("Invalid query value");
         });
     });
   });
@@ -324,6 +333,7 @@ describe("/api/articles/:article_id/comments", () => {
         .expect(200)
         .then(({ body }) => {
           const { comments } = body;
+          expect(comments.length).toBe(2)
           comments.forEach((comment) => {
             expect(comment.article_id).toBe(5);
             expect(typeof comment.comment_id).toBe("number");
@@ -351,6 +361,7 @@ describe("/api/articles/:article_id/comments", () => {
         .then(({ body }) => {
           const { comments } = body;
           expect(comments.length).toBe(0);
+          expect(Array.isArray(comments)).toBe(true)
         });
     });
     test("GET 400: Should return a 400 'Invalid request' error if the article ID is of the incorrect type", () => {
