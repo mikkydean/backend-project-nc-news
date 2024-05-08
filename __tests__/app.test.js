@@ -291,6 +291,15 @@ describe("/api/articles", () => {
         expect(total_count).toBe(12)
       })
     })
+    test("GET 200: Should respond with articles sorted by comment_count", () => {
+      return request(app)
+        .get("/api/articles?sort_by=comment_count")
+        .expect(200)
+        .then(({ body }) => {
+          const { articles } = body
+          expect(articles).toBeSortedBy("comment_count", { descending: true });
+        });
+    });
     test("GET 404: Responds with an error if the endpoint is not found", () => {
       return request(app)
         .get("/api/article_endpoint")

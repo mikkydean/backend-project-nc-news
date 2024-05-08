@@ -43,7 +43,7 @@ exports.selectArticles = (topic, sort_by="created_at", order="DESC", p, length=1
     queryValue.push(topic);
     sqlQueryString += `WHERE topic=$1 `;
   }
-  sqlQueryString += `GROUP BY articles.article_id ORDER BY articles.${sort_by} ${order}
+  sqlQueryString += `GROUP BY articles.article_id ORDER BY ${sort_by} ${order}
                      LIMIT ${length} `;
 
   if (p) {
